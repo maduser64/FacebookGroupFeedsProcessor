@@ -1,11 +1,20 @@
 {
-    "disabled": false,
-    "bindings": [
-        {
-            "name": "myTimer",
-            "type": "timerTrigger",
-            "direction": "in",
-            "schedule": "0 */5 * * * *"
-        }
-    ]
+  "bindings": [
+    {
+      "name": "myTimer",
+      "type": "timerTrigger",
+      "direction": "in",
+      "schedule": "0 0 0/3 * * *"
+    },
+    {
+      "type": "documentDB",
+      "name": "inputDocument",
+      "databaseName": "feeds-database",
+      "collectionName": "facebook-group-feeds",
+      "id": "31c44840-da4b-45ef-b791-5b20fe7c66d6",
+      "connection": "dotnetsg_DOCUMENTDB",
+      "direction": "in"
+    }
+  ],
+  "disabled": false
 }
