@@ -16,9 +16,9 @@ public static async Task Run(TimerInfo myTimer, dynamic inputDocument, TraceWrit
 
     var existingFeeds = JsonConvert.DeserializeObject<FacebookGroupFeed>(inputDocument.ToString());
 
-    var finalizedFeeds = UnionLists(existingFeeds.Feeds, newSgDotNetCommunityFacebookGroupFeeds);
+    var finalizedFeeds = UnionLists(existingFeeds.Feeds, newSgDotNetCommunityFacebookGroupFeeds.Feeds);
 
-    finalizedFeeds = UnionLists(finalizedFeeds, newAzureCommunityFacebookGroupFeeds);
+    finalizedFeeds = UnionLists(finalizedFeeds, newAzureCommunityFacebookGroupFeeds.Feeds);
 
     existingFeeds.Feeds = finalizedFeeds;
 
