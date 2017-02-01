@@ -6,51 +6,77 @@ using System.Configuration;
 
 public static async Task Run(TimerInfo myTimer, dynamic inputDocument, TraceWriter log)
 {
+    string sgDotNetCommunityFacebookGroupFeedsJson = await GetFacebookGroupFeedsAsJsonAsync("1504549153159226");
+
+    string sgAzureCommunityFacebookGroupFeedsJson = await GetFacebookGroupFeedsAsJsonAsync("774384765970833");
+
+    var newSgDotNetCommunityFacebookGroupFeeds = JsonConvert.DeserializeObject<FacebookGroupFeed>(sgDotNetCommunityFacebookGroupFeedsJson);
+
+    var newAzureCommunityFacebookGroupFeeds = JsonConvert.DeserializeObject<FacebookGroupFeed>(sgAzureCommunityFacebookGroupFeedsJson);
+
+    var existingFeeds = JsonConvert.DeserializeObject<FacebookGroupFeed>(inputDocument.ToString());
+
+    var finalizedFeeds = UnionLists(existingFeeds.Feeds, newSgDotNetCommunityFacebookGroupFeeds);
+
+    finalizedFeeds = UnionLists(finalizedFeeds, newAzureCommunityFacebookGroupFeeds);
+
+    existingFeeds.Feeds = finalizedFeeds;
+
+    string finalizedJson = JsonConvert.SerializeObject(existingFeeds);
+
+    log.Info($"Result Returned: {finalizedJson}.");
+
+    inputDocument.data = existingFeeds.Feeds;
+}
+
+private static async Task<string> GetFacebookGroupFeedsAsJsonAsync(string facebookGroupId) 
+{
     using (var client = new HttpClient())
     {
         var response = await client.GetAsync(
-            "https://graph.facebook.com/v2.8/1504549153159226/feed?" + 
+            "https://graph.facebook.com/v2.8/" + facebookGroupId + "/feed?" + 
             "fields=story,updated_time,message,description,link,from,name&" + 
             "access_token=" + ConfigurationManager.AppSettings["FacebookGraphAccessToken"]
             );
 
         string jsonResult = await response.Content.ReadAsStringAsync();
 
-        var newFeeds = JsonConvert.DeserializeObject<FacebookGroupFeed>(jsonResult);
-        var existingFeeds = JsonConvert.DeserializeObject<FacebookGroupFeed>(inputDocument.ToString());
+        return jsonResult;
+    }
+    
+}
 
-        var finalizedFeeds = new List<FacebookFeed>(existingFeeds.Feeds);
+private static List<FacebookFeed> UnionLists(List<FacebookFeed> targetList, List<FacebookFeed> sourceList)
+{
+    var finalizedFeeds = new List<FacebookFeed>(targetList);
 
-        foreach(var newFeed in newFeeds.Feeds) {
-            var isFeedExist = false;
+    foreach(var newItem in sourceList) 
+    {
+        var isFeedExist = false;
 
-            foreach(var existingFeed in existingFeeds.Feeds) {
-                if (existingFeed.Id == newFeed.Id) {
-                    isFeedExist = true;
+        foreach(var existingItem in targetList) 
+        {
+            if (existingItem.Id == newItem.Id || 
+                (!string.IsNullOrWhiteSpace(newItem.ArticleUrl) && existingItem.ArticleUrl.Trim() == newItem.ArticleUrl.Trim()) {
 
-                    break;
-                }
-            }
+                isFeedExist = true;
 
-            if (!isFeedExist) {
-                finalizedFeeds.Add(newFeed);
+                break;
             }
         }
 
-        existingFeeds.Feeds = finalizedFeeds;
+        if (!isFeedExist) {
+            finalizedFeeds.Add(newItem);
+        }
+    }
 
-        string finalizedJson = JsonConvert.SerializeObject(existingFeeds);
-
-        log.Info($"Result Returned: {finalizedJson}.");
-
-        inputDocument.data = existingFeeds.Feeds;
-    }  
+    return finalizedFeeds;
 }
 
 public class FacebookGroupFeed
 {
     [JsonProperty(PropertyName="data")]
-    public IEnumerable<FacebookFeed> Feeds { get; set; }
+    public List<FacebookFeed> Feeds { get; set; }
 }
 
 public class FacebookFeed
