@@ -57,7 +57,7 @@ private static List<FacebookFeed> UnionLists(List<FacebookFeed> targetList, List
         foreach(var existingItem in targetList) 
         {
             if (existingItem.Id == newItem.Id || 
-                (!string.IsNullOrWhiteSpace(newItem.ArticleUrl) && existingItem.ArticleUrl.Trim() == newItem.ArticleUrl.Trim()) {
+            (!string.IsNullOrWhiteSpace(newItem.ArticleUrl) && existingItem.ArticleUrl.Trim() == newItem.ArticleUrl.Trim())) {
 
                 isFeedExist = true;
 
