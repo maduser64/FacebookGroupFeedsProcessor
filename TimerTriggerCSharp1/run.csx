@@ -4,11 +4,14 @@ using System;
 using Newtonsoft.Json;
 using System.Configuration;
 
+private const string SG_DOT_NET_COMMUNITY_FB_GROUP_ID = "1504549153159226";
+private const string SG_AZURE_COMMUNITY_FB_GROUP_ID = "774384765970833";
+
 public static async Task Run(TimerInfo myTimer, dynamic inputDocument, TraceWriter log)
 {
-    string sgDotNetCommunityFacebookGroupFeedsJson = await GetFacebookGroupFeedsAsJsonAsync("1504549153159226");
+    string sgDotNetCommunityFacebookGroupFeedsJson = await GetFacebookGroupFeedsAsJsonAsync(SG_DOT_NET_COMMUNITY_FB_GROUP_ID);
 
-    string sgAzureCommunityFacebookGroupFeedsJson = await GetFacebookGroupFeedsAsJsonAsync("774384765970833");
+    string sgAzureCommunityFacebookGroupFeedsJson = await GetFacebookGroupFeedsAsJsonAsync(SG_AZURE_COMMUNITY_FB_GROUP_ID);
 
     var newSgDotNetCommunityFacebookGroupFeeds = JsonConvert.DeserializeObject<FacebookGroupFeed>(sgDotNetCommunityFacebookGroupFeedsJson);
 
